@@ -1,6 +1,9 @@
+import 'package:buscador_gifs/ui/gif_page.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'dart:async';
+import  'package:transparent_image/transparent_image.dart';
+import 'package:share/share.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -10,7 +13,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   
   String searchTerm;
-  int offset;
+  int offset = 0;
 
   Future<Map> _getGifs() async{
     Response response;
@@ -53,6 +56,9 @@ class _HomeState extends State<Home> {
               ),
               style: TextStyle(color: Colors.white, fontSize: 18),
               textAlign: TextAlign.center,
+              onSubmitted: (text){
+                setState(() => searchTerm = text);
+              },
             ),
             Expanded(
               child: FutureBuilder(
@@ -91,7 +97,18 @@ class _HomeState extends State<Home> {
       itemBuilder: (context, index){
         if (searchTerm == null || index < snapshot.data['data'].length){
           return GestureDetector(
-            child: Image.network(snapshot.data['data'][index]['images']['fixed_height']['url']),
+            child: FadeInImage.memoryNetwork(
+              image: snapshot.data['data'][index]['images']['fixed_height']['url'],
+              placeholder: kTransparentImage,
+            ),
+            onTap: (){
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => GifPage(snapshot.data['data'][index])
+              ));
+            },
+            onLongPress: (){
+              Share.share(snapshot.data['data'][index]['images']['fixed_height']['url']);
+            },
           );
         }
         else {
@@ -111,5 +128,4 @@ class _HomeState extends State<Home> {
       },
     );
   }
-
 }
